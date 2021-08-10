@@ -16,7 +16,7 @@ export default {
     TabBarCom
   },
   methods: {
-    // 是否显示tabbar
+    // 是否显示tabbar.
     showTabBar () {
       const names = ['Login']
       return !names.includes(this.$route.name)
