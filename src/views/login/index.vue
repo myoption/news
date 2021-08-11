@@ -82,6 +82,21 @@
           <!-- 显示与隐藏密码 -->
           <i slot="right-icon" class="iconfont icon-wode" @click="showPwd"></i>
           </van-field>
+          <div class="verify-code">
+            <van-field
+              v-model="user.verifyCode"
+              center
+              clearable
+              name="code"
+              placeholder="请输入验证码"
+              class="code-wrap"
+            >
+            <!-- 通过具名插槽传递自定义icon -->
+            <i slot="left-icon" class="iconfont icon-yanzhengma"></i>
+              <!-- <!-以插槽形式注入验证码 -> -->
+            </van-field>
+            <van-image :src="imgCode" width="120" @click="getVerifyCode" class="svg-code"/>
+          </div>
         </van-cell-group>
         <div class="login-btn-wrap">
           <van-button block type="primary" native-type="submit" class="login-btn">
@@ -103,14 +118,19 @@
 import NavBar from '../../component/navbar'
 import { mapMutations } from 'vuex'
 import * as request from './api'
+import * as types from '../../utils/types'
+// import axios from 'axios'
 
 export default {
   data () {
     return {
+      // 验证码
+      imgCode: `http://localhost:4444/api/getCodeImg?t=${new Date().getTime()}`,
       // 表单的值
       user: {
         mobile: '13911111111',
-        code: '246810'
+        code: '246810',
+        verifyCode: ''
       },
       // 切换登录方式
       isCode: true,
@@ -150,6 +170,10 @@ export default {
   },
   methods: {
     ...mapMutations(['setUser']),
+    // 更新验证码
+    updatePicCode () {
+      this.imgCode = `http://localhost:4444/api/getCodeImg?t=${new Date().getTime()}`
+    },
     /**
      * @desc 登录、提示
      */
@@ -169,10 +193,18 @@ export default {
       })
       try {
         const res = await request.logIn(logInfo)
-        console.log(res)
+        // console.log('res', res)
         if (res && res.status === 201) {
           toast.success('登录成功')
+          // 存储token
           this.setUser(res.data.data)
+          // 存储是否授权
+          sessionStorage.setItem(types.IS_AUTHORIZED, true)
+          // 是否需要重定向
+          const path = sessionStorage.getItem(types.REDIRECT_URL) || '/'
+          sessionStorage.removeItem(types.REDIRECT_URL)
+          // console.log('path', path)
+          this.$router.replace(path)
         }
       } catch (err) {
         // console.log(err.response.status)
@@ -238,6 +270,10 @@ export default {
           }
         }, 1000)
       }
+    },
+    getVerifyCode () {
+      this.imgCode = `http://localhost:4444/api/getCodeImg?t=${new Date().getTime()}`
+      // this.imgCode = 'http://localhost:4444/api/getCodeImg'
     }
   },
   created () {
@@ -256,6 +292,8 @@ export default {
         }
       }, 1000)
     }
+    // 获取验证码
+    // this.$nextTick(() => this.getVerifyCode())
   }
 }
 </script>
@@ -284,6 +322,17 @@ export default {
   }
   .pwd-wrap {
     height: 108px;
+  }
+  .code-wrap {
+    width: 50vw;
+  }
+  .verify-code {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .svg-code {
+      transform: translateX(-40px);
+    }
   }
 }
 </style>

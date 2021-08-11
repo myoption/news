@@ -12,6 +12,7 @@ export default new Vuex.Store({
   },
   mutations: {
     setUser (state, user) {
+      state.user = user
       // 需要转化
       storage.setItem(TOKEN_KEY, user)
     }
